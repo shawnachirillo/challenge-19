@@ -5,3 +5,13 @@ export interface Question {
   question: string;
   answers: Answer[];
 }
+const questions: {
+  question: string;
+  answers: {
+      text: string;
+      isCorrect: boolean;
+  }[];
+}[] = [];
+
+// Example usage of questions to avoid unused variable error
+console.log(questions);

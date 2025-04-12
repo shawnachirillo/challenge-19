@@ -1,6 +1,6 @@
-import { useState, } from 'react';
+import { useState } from 'react';
 import type { Question } from '../models/Question.js';
-import { getQuestions } from '../services/questionApi.js';
+import { getQuestions as fetchQuestions } from '../services/questionApi.js'; // ✅ avoid naming conflict
 
 const Quiz = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -9,35 +9,36 @@ const Quiz = () => {
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [quizStarted, setQuizStarted] = useState(false);
 
-  const getRandomQuestions = async () => {
+  const getQuestions = async () => {
+    console.log('📡 Fetching questions from API...');
     try {
-      const questions = await getQuestions();
+      const fetchedQuestions = await fetchQuestions(); // ✅ now using the API function
 
-      if (!questions) {
-        throw new Error('something went wrong!');
+      if (!Array.isArray(fetchedQuestions) || fetchedQuestions.length === 0) {
+        throw new Error('No questions received from API.');
       }
 
-      setQuestions(questions);
+      console.log('✅ Questions received:', fetchedQuestions);
+      setQuestions(fetchedQuestions);
     } catch (err) {
-      console.error(err);
+      console.error('❌ Error loading questions:', err);
+      alert('Failed to load questions. Please try again later.');
     }
   };
 
   const handleAnswerClick = (isCorrect: boolean) => {
-    if (isCorrect) {
-      setScore(score + 1);
-    }
+    if (isCorrect) setScore(score + 1);
 
-    const nextQuestionIndex = currentQuestionIndex + 1;
-    if (nextQuestionIndex < questions.length) {
-      setCurrentQuestionIndex(nextQuestionIndex);
+    const next = currentQuestionIndex + 1;
+    if (next < questions.length) {
+      setCurrentQuestionIndex(next);
     } else {
       setQuizCompleted(true);
     }
   };
 
   const handleStartQuiz = async () => {
-    await getRandomQuestions();
+    await getQuestions();
     setQuizStarted(true);
     setQuizCompleted(false);
     setScore(0);
@@ -82,14 +83,20 @@ const Quiz = () => {
 
   return (
     <div className='card p-4'>
-      <h2>{currentQuestion.question}</h2>
+      <h2 data-testid="question">{currentQuestion.question}</h2>
       <div className="mt-3">
-      {currentQuestion.answers.map((answer, index) => (
-        <div key={index} className="d-flex align-items-center mb-2">
-          <button className="btn btn-primary" onClick={() => handleAnswerClick(answer.isCorrect)}>{index + 1}</button>
-          <div className="alert alert-secondary mb-0 ms-2 flex-grow-1">{answer.text}</div>
-        </div>
-      ))}
+        {currentQuestion.answers.map((answer, index) => (
+          <div key={index} className="d-flex align-items-center mb-2">
+            <button
+              data-testid="answer"
+              className="btn btn-primary"
+              onClick={() => handleAnswerClick(answer.isCorrect)}
+            >
+              {index + 1}
+            </button>
+            <div className="alert alert-secondary mb-0 ms-2 flex-grow-1">{answer.text}</div>
+          </div>
+        ))}
       </div>
     </div>
   );
