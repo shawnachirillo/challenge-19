@@ -1,6 +1,6 @@
 import React from 'react';
 import { mount } from 'cypress/react';
-import Quiz from '../../../../client/src/components/Quiz';
+import Quiz from '@components/Quiz';
 
 describe('Quiz Component', () => {
   it('renders with Start button', () => {
